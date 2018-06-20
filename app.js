@@ -1,6 +1,6 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
-const {apiRouter} = require('./routes/index');
+const apiRouter = require('./routes/api');
 const mongoose = require('mongoose');
 const {DB_URL} = require('./config/index');
 

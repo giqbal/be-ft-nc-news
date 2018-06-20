@@ -1,5 +1,5 @@
 const apiRouter = require('express').Router();
-const {topicsRouter} = require('./index')
+const {topicsRouter} = require('./index');
 
 apiRouter.route('/')
     .get((req, res, next) => {
