@@ -4,7 +4,7 @@
   "description": "Northcoders News API Sprint",
   "main": "index.js",
   "scripts": {
-    "test": "npm run seed:dev && mocha ./spec/*.js",
+    "test": "mocha ./spec/*.js",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed:dev": "node ./seed/seed.dev.js"

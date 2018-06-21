@@ -5,17 +5,22 @@ const mongoose = require('mongoose');
 const seedDB = ({userData, topicData, articleData, commentData}) => {
     return mongoose.connection.dropDatabase()
         .then(() => {
-            Topic.insertMany(topicData);
-            return User.insertMany(userData);
+            return Promise.all([User.insertMany(userData), Topic.insertMany(topicData)]);
         })
-        .then(userDocs => {
+        .then(([userDocs, topicDocs]) => {
             return Promise.all([
                 userDocs,
+                topicDocs,
                 Article.insertMany(formatArticleData(articleData, createUserLookUp(articleData, userDocs)))
             ]);
         })
-        .then(([userDocs, articleDocs]) => {
-            return Comment.insertMany(formatCommentData(commentData, createUserLookUp(articleData, userDocs), createArticleLookup(commentData, articleDocs)));
+        .then(([userDocs, topicDocs, articleDocs]) => {
+            return Promise.all([
+                userDocs,
+                topicDocs,
+                articleDocs,
+                Comment.insertMany(formatCommentData(commentData, createUserLookUp(articleData, userDocs), createArticleLookup(commentData, articleDocs)))
+            ]);
         })
         .catch(console.log);
 }
