@@ -11,6 +11,7 @@ const getArticlesBySlug = (req, res, next) => {
     const {topic_slug} = req.params;
     Article.find({belongs_to: topic_slug})
         .populate({path: 'created_by', select: 'username -_id'})
+        .lean()
         .then(articles => {
             const queryPromiseArr = articles.map(article => Comment.count({belongs_to: article._id}));
             queryPromiseArr.push(articles);
@@ -19,12 +20,22 @@ const getArticlesBySlug = (req, res, next) => {
         .then((promiseArr) => {
             const rawArticles = promiseArr.pop()
             const articles = promiseArr.map((commentCount, index) => {
-                const {_id, title, body, created_by, belongs_to, votes, __v} = rawArticles[index];
-                return {_id, title, body, created_by: created_by.username, belongs_to, votes, __v, comments: commentCount};
+                const {created_by} = rawArticles[index];
+                return {...rawArticles[index], created_by: created_by.username, comments: commentCount};
             });
             res.send({articles});
         })
         .catch(next);
 }
 
-module.exports = {getTopics, getArticlesBySlug}
+const addArticleBySlug = (req, res, next) => {
+     const {topic_slug} = req.params;
+     const newArticle = new Article({...req.body, belongs_to: topic_slug});
+     newArticle.save()
+        .then(article => {
+            res.status(201).send({article});
+        })
+        .catch(next);
+}
+
+module.exports = {getTopics, getArticlesBySlug, addArticleBySlug}

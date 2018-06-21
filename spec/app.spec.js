@@ -71,7 +71,34 @@ describe('NC news', () => {
                     expect(res.body.articles[0].created_by).to.be.a('string');
                 });
         });
-        
+        it('POST article returns status 201 and craeted article', () => {
+            const title = 'Superman defeated by one and only!';
+            const body = 'Super villan Mitch battled superman to the death and won last night.';
+            return request
+                .post(`/api/topics/${topicDocs[0].slug}/articles`)
+                .send({
+                    title,
+                    body,
+                    created_by: userDocs[0]._id
+                })
+                .expect(201)
+                .then(({body: {article}}) => {
+                    expect(article).to.have.all.keys(
+                        '_id',
+                        'title',
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        '__v'
+                    );
+                    expect(article.title).to.equal(title);
+                    expect(article.body).to.equal(body);
+                    expect(article.created_by).to.equal(userDocs[0]._id.toString());
+                    expect(article.belongs_to).to.equal(topicDocs[0].slug);
+                });
+                
+        });
     })
 });
 
