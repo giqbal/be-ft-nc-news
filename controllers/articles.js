@@ -61,4 +61,22 @@ const addCommentByArticle = (req, res, next) => {
         .catch(next);
 }
 
-module.exports = {getArticles, getArticle, getCommentsByArticle, addCommentByArticle}
+const updateArticleVote = (req, res, next) => {
+    const {article_id} = req.params;
+    const {vote} = req.query;
+    let updateVote;
+    if (vote === 'up') updateVote = {$inc: {votes: 1}};
+    else if (vote === 'down') updateVote = {$inc: {votes: -1}};
+    Article.findByIdAndUpdate(article_id, updateVote, {new: true})
+        .populate('created_by', 'username -_id')
+        .lean()
+        .then(article => {
+            const {created_by: {username}} = article;
+            article.created_by = username;
+            res.send({article});
+        })
+        .catch(console.log);
+    
+}
+
+module.exports = {getArticles, getArticle, getCommentsByArticle, addCommentByArticle, updateArticleVote}

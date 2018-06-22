@@ -122,8 +122,8 @@ describe('NC news', () => {
                 
         });
     });
-    describe('api/articles/:article_id', () => {
-        it('GET returns status 200 and array of articles', () => {
+    describe.only('api/articles/:article_id', () => {
+        it('GET returns status 200 and an article', () => {
             return request
                 .get(`/api/articles/${articleDocs[0]._id}`)
                 .expect(200)
@@ -140,6 +140,46 @@ describe('NC news', () => {
                         '__v'
                     );
                     expect(body.article._id).to.equal(articleDocs[0]._id.toString());
+                    expect(body.article.created_by).to.be.a('string');
+                });
+        });
+        it('PUT returns status 200 and an incremented vote count for article', () => {
+            return request
+                .put(`/api/articles/${articleDocs[0]._id}?vote=up`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('article');                    
+                    expect(body.article).to.have.all.keys(
+                        '_id',
+                        'title',
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',                
+                        '__v'
+                    );
+                    expect(body.article._id).to.equal(articleDocs[0]._id.toString());
+                    expect(body.article.votes).to.equal(1);
+                    expect(body.article.created_by).to.be.a('string');
+                });
+        });
+        it('PUT returns status 200 and an decremented vote count for article', () => {
+            return request
+                .put(`/api/articles/${articleDocs[0]._id}?vote=down`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('article');                    
+                    expect(body.article).to.have.all.keys(
+                        '_id',
+                        'title',
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',                
+                        '__v'
+                    );
+                    expect(body.article._id).to.equal(articleDocs[0]._id.toString());
+                    expect(body.article.votes).to.equal(-1);
                     expect(body.article.created_by).to.be.a('string');
                 });
         });
