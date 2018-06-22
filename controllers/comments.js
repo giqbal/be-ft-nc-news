@@ -21,8 +21,9 @@ const updateCommentVote = (req, res, next) => {
 const removeComment = (req, res, next) => {
     const {comment_id} = req.params;
     Comment.findByIdAndRemove(comment_id)
-        .then(() => {
-            res.status(204).send({});
+        .then((comment) => {
+            if (comment === null) next({status: 404, message: `Page not found for id: ${comment_id}`});
+            else res.status(204).send({});
         })
         .catch(next);
 }

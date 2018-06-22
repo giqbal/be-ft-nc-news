@@ -231,7 +231,7 @@ describe('NC news', () => {
                 });
         });
     });
-    describe('api/comments/:comment_id', () => {
+    describe.only('api/comments/:comment_id', () => {
         it('PUT returns status 200 and an incremented vote count for a comment', () => {
             return request
                 .put(`/api/comments/${commentDocs[0]._id}?vote=up`)
@@ -278,6 +278,22 @@ describe('NC news', () => {
                 .expect(204)
                 .then(({body}) => {
                     expect(body).to.be.empty;
+                });
+        });
+        it('DELETE returns status 404 when non-existent comment ID is used', () => {
+            return request
+                .delete(`/api/comments/${articleDocs[0]._id}`)
+                .expect(404)
+                .then(({body}) => {
+                    expect(body.message).to.be.equal(`Page not found for id: ${articleDocs[0]._id}`);
+                });
+        });
+        it('DELETE returns status 400 when comment ID is in an incorect format', () => {
+            return request
+                .delete(`/api/comments/abc`)
+                .expect(400)
+                .then(({body}) => {
+                    expect(body.message).to.be.equal(`Bad request! abc is not a valid ID`);
                 });
         });
     });

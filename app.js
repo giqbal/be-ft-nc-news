@@ -20,6 +20,7 @@ app.use('/*', (req, res, next) => {
 
 app.use((err, req, res, next) => {
     if (err.status) res.status(err.status).send({message: err.message});
+    else if (err.name === 'CastError') res.status(400).send({message: `Bad request! ${err.value} is not a valid ID`})
     else res.status(500).send({message: 'Woops! We messed something up on our server'});
 });
 
