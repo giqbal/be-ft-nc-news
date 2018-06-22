@@ -15,11 +15,11 @@ app.use(bodyParser.json());
 app.use('/api', apiRouter);
 
 app.use('/*', (req, res, next) => {
-    res.status(404).send({message: 'Page not found'});
+    next({status: 404, message: 'Page not found'});
 });
 
 app.use((err, req, res, next) => {
-    if (err.status) res.status(err.status).send(err.message);
+    if (err.status) res.status(err.status).send({message: err.message});
     else res.status(500).send({message: 'Woops! We messed something up on our server'});
 });
 

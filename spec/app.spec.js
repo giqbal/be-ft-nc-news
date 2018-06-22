@@ -11,7 +11,7 @@ let articleDocs, topicDocs, commentDocs, userDocs;
 
 describe('NC news', () => {
     beforeEach(function() {
-        this.timeout(5000);
+        this.timeout(4000);
         return seedDB(testData)
             .then(docs => {
                 [userDocs, topicDocs, articleDocs, commentDocs] = docs;
@@ -231,7 +231,7 @@ describe('NC news', () => {
                 });
         });
     });
-    describe.only('api/comments/:comment_id', () => {
+    describe('api/comments/:comment_id', () => {
         it('PUT returns status 200 and an incremented vote count for a comment', () => {
             return request
                 .put(`/api/comments/${commentDocs[0]._id}?vote=up`)
@@ -277,9 +277,36 @@ describe('NC news', () => {
                 .delete(`/api/comments/${commentDocs[0]._id}`)
                 .expect(204)
                 .then(({body}) => {
-                    expect(body).to.be.empty
-                })
-        })
+                    expect(body).to.be.empty;
+                });
+        });
+    });
+    describe('api/users/:username', () => {
+        it('GET returns status 200 and user by username', () => {
+            return request
+                .get(`/api/users/${userDocs[1].username}`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('user');
+                    expect(body.user).to.have.all.keys(
+                        '_id',
+                        'name',
+                        'username',
+                        'avatar_url',
+                        '__v'
+                    );
+                    expect(body.user.username).to.equal(userDocs[1].username);
+                });
+        });
+        it('GET returns status 404 with non existent username', () => {
+            const nonexistentUsername = 'giqbal'
+            return request
+                .get(`/api/users/${nonexistentUsername}`)
+                .expect(404)
+                .then(({body}) => {
+                    expect(body.message).to.equal(`Page not found for id: ${nonexistentUsername}`);
+                });
+        });
     });
 });
 
