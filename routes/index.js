@@ -1,5 +1,6 @@
 module.exports = {
     topicsRouter: require('./topics'),
-    articlesRouter: require('./articles')
+    articlesRouter: require('./articles'),
+    commentsRouter: require('./comments')
 }
 

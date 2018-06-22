@@ -67,6 +67,7 @@ const updateArticleVote = (req, res, next) => {
     let updateVote;
     if (vote === 'up') updateVote = {$inc: {votes: 1}};
     else if (vote === 'down') updateVote = {$inc: {votes: -1}};
+    else next({status: 400, message: 'Bad request'});
     Article.findByIdAndUpdate(article_id, updateVote, {new: true})
         .populate('created_by', 'username -_id')
         .lean()
@@ -75,7 +76,7 @@ const updateArticleVote = (req, res, next) => {
             article.created_by = username;
             res.send({article});
         })
-        .catch(console.log);
+        .catch(next);
     
 }
 

@@ -122,7 +122,7 @@ describe('NC news', () => {
                 
         });
     });
-    describe.only('api/articles/:article_id', () => {
+    describe('api/articles/:article_id', () => {
         it('GET returns status 200 and an article', () => {
             return request
                 .get(`/api/articles/${articleDocs[0]._id}`)
@@ -227,6 +227,48 @@ describe('NC news', () => {
                     );
                     expect(body.comment.belongs_to).to.equal(articleDocs[0]._id.toString());
                     expect(body.comment.body).to.equal(commentBody);
+                    expect(body.comment.created_by).to.be.a('string');
+                });
+        });
+    });
+    describe.only('api/comments/:comment_id', () => {
+        it('PUT returns status 200 and an incremented vote count for a comment', () => {
+            return request
+                .put(`/api/comments/${commentDocs[0]._id}?vote=up`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('comment');                    
+                    expect(body.comment).to.have.all.keys(
+                        '_id',                        
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        'created_at',
+                        '__v'
+                    );
+                    expect(body.comment._id).to.equal(commentDocs[0]._id.toString());
+                    expect(body.comment.votes).to.equal(commentDocs[0].votes + 1);
+                    expect(body.comment.created_by).to.be.a('string');
+                });
+        });
+        it('PUT returns status 200 and an decremented vote count for a comment', () => {
+            return request
+                .put(`/api/comments/${commentDocs[0]._id}?vote=down`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('comment');                    
+                    expect(body.comment).to.have.all.keys(
+                        '_id',                        
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        'created_at',
+                        '__v'
+                    );
+                    expect(body.comment._id).to.equal(commentDocs[0]._id.toString());
+                    expect(body.comment.votes).to.equal(commentDocs[0].votes - 1);
                     expect(body.comment.created_by).to.be.a('string');
                 });
         });
