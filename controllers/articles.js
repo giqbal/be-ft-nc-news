@@ -20,4 +20,45 @@ const getArticles = (req, res, next) => {
         .catch(next);
 }
 
-module.exports = {getArticles}
+const getArticle = (req, res, next) => {
+    const {article_id} = req.params;
+    Article.findById(article_id)
+        .populate('created_by', 'username -_id')
+        .lean()
+        .then(unformattedArticle => {
+            return Promise.all([unformattedArticle, Comment.count({belongs_to: unformattedArticle._id})]);
+        })
+        .then(([unformattedArticle, comments]) => {
+            const {created_by} = unformattedArticle;
+            const article = {...unformattedArticle, created_by: created_by.username, comments};
+            res.send({article});
+        })
+        .catch(next);
+}
+
+const getCommentsByArticle = (req, res, next) => {
+    const {article_id} = req.params;
+    Comment.find({belongs_to: article_id})
+        .populate('created_by', 'username -_id')
+        .lean()
+        .then(unformattedComments => {
+            const comments = unformattedComments.map(unformattedComment => {
+                const {created_by} = unformattedComment;
+                return {...unformattedComment, created_by: created_by.username};
+            })
+            res.send({comments});
+        })
+        .catch(next);
+}
+
+const addCommentByArticle = (req, res, next) => {
+    const {article_id} = req.params;
+    const newComment = new Comment({...req.body, belongs_to: article_id});
+    newComment.save()
+        .then(comment => {
+            res.status(201).send({comment});
+        })
+        .catch(next);
+}
+
+module.exports = {getArticles, getArticle, getCommentsByArticle, addCommentByArticle}

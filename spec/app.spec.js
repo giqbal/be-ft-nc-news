@@ -117,6 +117,77 @@ describe('NC news', () => {
                         'comments',
                         '__v'
                     );
+                    expect(body.articles[0].created_by).to.be.a('string');
+                });
+                
+        });
+    });
+    describe('api/articles/:article_id', () => {
+        it('GET returns status 200 and array of articles', () => {
+            return request
+                .get(`/api/articles/${articleDocs[0]._id}`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('article');                    
+                    expect(body.article).to.have.all.keys(
+                        '_id',
+                        'title',
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        'comments',
+                        '__v'
+                    );
+                    expect(body.article._id).to.equal(articleDocs[0]._id.toString());
+                    expect(body.article.created_by).to.be.a('string');
+                });
+        });
+    });
+    describe('api/articles/:article_id/comments', () => {
+        it('GET returns status 200 and array of comments', () => {
+            return request
+                .get(`/api/articles/${articleDocs[0]._id}/comments`)
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('comments');   
+                    expect(body.comments.length).to.equal(2);                 
+                    expect(body.comments[0]).to.have.all.keys(
+                        '_id',                        
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        'created_at',
+                        '__v'
+                    );
+                    expect(body.comments[0].belongs_to).to.equal(articleDocs[0]._id.toString());
+                    expect(body.comments[0].created_by).to.be.a('string');
+                });
+        });
+        it('POST returns status 201 and added comment', () => {
+            const commentBody = 'I totally agree, take my money.'
+            return request
+                .post(`/api/articles/${articleDocs[0]._id}/comments`)
+                .send({
+                    body: commentBody,
+                    created_by: userDocs[1]._id
+                })
+                .expect(201)
+                .then(({body}) => {
+                    expect(body).to.have.all.keys('comment');                
+                    expect(body.comment).to.have.all.keys(
+                        '_id',                        
+                        'body',
+                        'created_by',
+                        'belongs_to',
+                        'votes',
+                        'created_at',
+                        '__v'
+                    );
+                    expect(body.comment.belongs_to).to.equal(articleDocs[0]._id.toString());
+                    expect(body.comment.body).to.equal(commentBody);
+                    expect(body.comment.created_by).to.be.a('string');
                 });
         });
     });
