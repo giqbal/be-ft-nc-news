@@ -18,4 +18,13 @@ const updateCommentVote = (req, res, next) => {
         .catch(next)
 }
 
-module.exports = {updateCommentVote};
+const removeComment = (req, res, next) => {
+    const {comment_id} = req.params;
+    Comment.findByIdAndRemove(comment_id)
+        .then(() => {
+            res.status(204).send({});
+        })
+        .catch(next);
+}
+
+module.exports = {updateCommentVote, removeComment};

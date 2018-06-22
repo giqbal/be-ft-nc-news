@@ -272,6 +272,14 @@ describe('NC news', () => {
                     expect(body.comment.created_by).to.be.a('string');
                 });
         });
+        it('DELETE returns status 204', () => {
+            return request
+                .delete(`/api/comments/${commentDocs[0]._id}`)
+                .expect(204)
+                .then(({body}) => {
+                    expect(body).to.be.empty
+                })
+        })
     });
 });
 
