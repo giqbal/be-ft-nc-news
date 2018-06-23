@@ -231,7 +231,7 @@ describe('NC news', () => {
                 });
         });
     });
-    describe.only('api/comments/:comment_id', () => {
+    describe('api/comments/:comment_id', () => {
         it('PUT returns status 200 and an incremented vote count for a comment', () => {
             return request
                 .put(`/api/comments/${commentDocs[0]._id}?vote=up`)
@@ -270,6 +270,38 @@ describe('NC news', () => {
                     expect(body.comment._id).to.equal(commentDocs[0]._id.toString());
                     expect(body.comment.votes).to.equal(commentDocs[0].votes - 1);
                     expect(body.comment.created_by).to.be.a('string');
+                });
+        });
+        it('PUT request with incorrect vote query returns status 400', () => {
+            return request
+                .put(`/api/comments/${commentDocs[0]._id}?vote=high`)
+                .expect(400)
+                .then(({body}) => {
+                    expect(body.message).to.equal('Bad request: Query must be vote=up or vote=down');
+                });
+        });
+       it('PUT request with query other then vote returns status 400', () => {
+            return request
+                .put(`/api/comments/${commentDocs[0]._id}?votes=up`)
+                .expect(400)
+                .then(({body}) => {
+                    expect(body.message).to.equal('Bad request: Query must be vote=up or vote=down');
+                });
+        });
+        it('PUT request returns status 400 for ID with incorrect format', () => {
+            return request
+                .put(`/api/comments/abc?vote=up`)
+                .expect(400)
+                .then(({body}) => {
+                    expect(body.message).to.equal(`Bad request! abc is not a valid ID`);
+                });
+        });
+        it('PUT request returns status 404 for non-existent ID', () => {
+            return request
+                .put(`/api/comments/${userDocs[0]._id}?vote=up`)
+                .expect(404)
+                .then(({body}) => {
+                    expect(body.message).to.equal(`Page not found for id: ${userDocs[0]._id}`);
                 });
         });
         it('DELETE returns status 204', () => {

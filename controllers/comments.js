@@ -6,16 +6,19 @@ const updateCommentVote = (req, res, next) => {
     let registerVote = 0;
     if (vote === 'up') registerVote = 1;
     else if (vote === 'down') registerVote = -1;
-    else next({status: 400, message: 'Bad request'});
+    else next({status: 400, message: 'Bad request: Query must be vote=up or vote=down'});
     Comment.findByIdAndUpdate(comment_id, {$inc: {votes: registerVote}}, {new: true})
         .populate('created_by', 'username -_id')
         .lean()
         .then(comment => {
-            const {created_by: {username}} = comment;
-            comment.created_by = username;
-            res.send({comment});
+            if (comment === null) next({status: 404, message: `Page not found for id: ${comment_id}`})
+            else {
+                const {created_by: {username}} = comment;
+                comment.created_by = username;
+                res.send({comment});
+            }
         })
-        .catch(next)
+        .catch(next);
 }
 
 const removeComment = (req, res, next) => {
