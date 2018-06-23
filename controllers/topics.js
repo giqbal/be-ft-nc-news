@@ -19,11 +19,14 @@ const getArticlesBySlug = (req, res, next) => {
         })
         .then((promiseArr) => {
             const rawArticles = promiseArr.pop()
-            const articles = promiseArr.map((commentCount, index) => {
-                const {created_by} = rawArticles[index];
-                return {...rawArticles[index], created_by: created_by.username, comments: commentCount};
-            });
-            res.send({articles});
+            if (rawArticles.length === 0) next({status: 404, message: `Page not found for topic: ${topic_slug}`});
+            else {
+                const articles = promiseArr.map((commentCount, index) => {
+                    const {created_by} = rawArticles[index];
+                    return {...rawArticles[index], created_by: created_by.username, comments: commentCount};
+                });
+                res.send({articles});
+            }
         })
         .catch(next);
 }

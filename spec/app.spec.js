@@ -48,8 +48,16 @@ describe('NC news', () => {
                     );
                 });
         });
+        it('GET request returns 404 with incorrect url', () => {
+            return request
+                .get('/api/topic')
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Page not found');
+                });
+        });
     });
-    describe('api/topics/:topic_slug/articles', () => {
+    describe.only('api/topics/:topic_slug/articles', () => {
         it('GET articles for a certain topic', () => {
             return request
                 .get(`/api/topics/${topicDocs[0].slug}/articles`)
@@ -70,7 +78,15 @@ describe('NC news', () => {
                     expect(articles[0].created_by).to.be.a('string');
                 });
         });
-        it('POST article returns status 201 and craeted article', () => {
+        it('GET returns 404 for non-existent topic', () => {
+            return request
+                .get('/api/topics/abc/articles')
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for topic: abc`)
+                })
+        })
+        it('POST article returns status 201 and created article', () => {
             const title = 'Superman defeated by one and only!';
             const body = 'Super villan Mitch battled superman to the death and won last night.';
             return request
@@ -96,7 +112,35 @@ describe('NC news', () => {
                     expect(article.created_by).to.equal(userDocs[0]._id.toString());
                     expect(article.belongs_to).to.equal(topicDocs[0].slug);
                 });
- 
+        });
+        it('POST returns status 400 if required field is missing', () => {
+            const title = 'Superman defeated by one and only!';
+            const body = 'Super villan Mitch battled superman to the death and won last night.';
+            return request
+                .post(`/api/topics/${topicDocs[0].slug}/articles`)
+                .send({
+                    title,
+                    body
+                })
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! Path `created_by` is required.')
+                });
+        });
+        it('POST returns status 400 if incorrect format of created_by is used', () => {
+            const title = 'Superman defeated by one and only!';
+            const body = 'Super villan Mitch battled superman to the death and won last night.';
+            return request
+                .post(`/api/topics/${topicDocs[0].slug}/articles`)
+                .send({
+                    title,
+                    body,
+                    created_by: 'abc'
+                })
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! Cast to ObjectID failed for value "abc" at path "created_by"')
+                });
         });
     });
     describe('api/articles', () => {
@@ -276,32 +320,32 @@ describe('NC news', () => {
             return request
                 .put(`/api/comments/${commentDocs[0]._id}?vote=high`)
                 .expect(400)
-                .then(({body}) => {
-                    expect(body.message).to.equal('Bad request: Query must be vote=up or vote=down');
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request: Query must be vote=up or vote=down');
                 });
         });
        it('PUT request with query other then vote returns status 400', () => {
             return request
                 .put(`/api/comments/${commentDocs[0]._id}?votes=up`)
                 .expect(400)
-                .then(({body}) => {
-                    expect(body.message).to.equal('Bad request: Query must be vote=up or vote=down');
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request: Query must be vote=up or vote=down');
                 });
         });
         it('PUT request returns status 400 for ID with incorrect format', () => {
             return request
                 .put(`/api/comments/abc?vote=up`)
                 .expect(400)
-                .then(({body}) => {
-                    expect(body.message).to.equal(`Bad request! abc is not a valid ID`);
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Bad request! abc is not a valid ID`);
                 });
         });
         it('PUT request returns status 404 for non-existent ID', () => {
             return request
                 .put(`/api/comments/${userDocs[0]._id}?vote=up`)
                 .expect(404)
-                .then(({body}) => {
-                    expect(body.message).to.equal(`Page not found for id: ${userDocs[0]._id}`);
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for id: ${userDocs[0]._id}`);
                 });
         });
         it('DELETE returns status 204', () => {
@@ -316,16 +360,16 @@ describe('NC news', () => {
             return request
                 .delete(`/api/comments/${articleDocs[0]._id}`)
                 .expect(404)
-                .then(({body}) => {
-                    expect(body.message).to.be.equal(`Page not found for id: ${articleDocs[0]._id}`);
+                .then(({body: {message}}) => {
+                    expect(message).to.be.equal(`Page not found for id: ${articleDocs[0]._id}`);
                 });
         });
         it('DELETE returns status 400 when comment ID is in an incorect format', () => {
             return request
                 .delete(`/api/comments/abc`)
                 .expect(400)
-                .then(({body}) => {
-                    expect(body.message).to.be.equal(`Bad request! abc is not a valid ID`);
+                .then(({body: {message}}) => {
+                    expect(message).to.be.equal(`Bad request! abc is not a valid ID`);
                 });
         });
     });
@@ -351,8 +395,8 @@ describe('NC news', () => {
             return request
                 .get(`/api/users/${nonexistentUsername}`)
                 .expect(404)
-                .then(({body}) => {
-                    expect(body.message).to.equal(`Page not found for id: ${nonexistentUsername}`);
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for id: ${nonexistentUsername}`);
                 });
         });
     });
