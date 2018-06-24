@@ -3,7 +3,7 @@ const {topicsRouter, articlesRouter, commentsRouter, usersRouter} = require('./i
 
 apiRouter.route('/')
     .get((req, res, next) => {
-        res.send({message: 'Welcome to NC News!'});
+        res.render('pages/index');
     });
 
 apiRouter.use('/topics', topicsRouter);

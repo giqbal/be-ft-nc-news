@@ -2,8 +2,8 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const apiRouter = require('./routes/api');
 const mongoose = require('mongoose');
-const {DB_URL} = require('./config/index');
-const {handle400, handle404} = require('./errors')
+const DB_URL = require('./config');
+const {handle400, handle404} = require('./errors');
 
 mongoose.connect(DB_URL)
     .then(() => {
@@ -12,6 +12,8 @@ mongoose.connect(DB_URL)
     .catch(console.log);
 
 app.use(bodyParser.json());
+
+app.set('view engine', 'ejs');
 
 app.use('/api', apiRouter);
 

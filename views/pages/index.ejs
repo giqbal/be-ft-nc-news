@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <% include ../partials/head %>
+    <body>
+        <section class="section">
+            <div class="content">
+                <h1 class="title is-1">
+                    Welcome to Northcoders News
+                </h1>
+                <p>
+                    Here is what you need to know about our endpoints:
+                </p>
+                <h2 class="title is-2">
+                    Topics API Endpoints
+                </h2>                
+                <h3>
+                    <strong>GET</strong> /api/topics
+                </h3>
+                <p>Returns all topics in an array</p>
+                <h3>
+                    <strong>GET</strong> /api/topics/[topic_slug]/articles
+                </h3>
+                <p>Returns all articles categorised as topic <em>[topic_slug]</em> in an array</p>
+                <h3>
+                    <strong>POST</strong> /api/topics/[topic_slug]/articles
+                </h3>
+                <p>Adds an article by topic <em>[topic_slug]</em> and returns the added article</p>
+                <h2 class="title is-2">
+                    Articles API Endpoints
+                </h2>
+                <h3>
+                    <strong>GET</strong> /api/articles
+                </h3>
+                <p>Returns all articles in an array</p>
+                <h3>
+                    <strong>GET</strong> /api/articles/[article_id]
+                </h3>
+                <p>Returns an article with ID <em>[article_id]</em></p>
+                <h3>
+                    <strong>GET</strong> /api/articles/:article_id/comments
+                </h3>
+                <p>Returns all comments in an array for an article with ID <em>[article_id]</em></p>
+                <h3>
+                    <strong>POST</strong> /api/articles/:article_id/comments
+                </h3>
+                <p>Adds a comment for article <em>[article_id]</em> and returns the added comment</p>
+                <h3>
+                    <strong>PUT</strong> /api/articles/[article_id]?vote=up
+                </h3>
+                <p>Upvote an article with ID <em>[article_id]</em>. To downvote replace 'up' by 'down'</p>
+                <h2 class="title is-2">
+                    Comments API Endpoints
+                </h2>
+                <h3>
+                    <strong>PUT</strong> /api/comments/[comment_id]?vote=up
+                </h3>
+                <p>Upvote a comment with ID <em>[comment_id]</em>. To downvote replace 'up' by 'down'</p>
+                <h3>
+                    <strong>DELETE</strong> /api/comments/[comment_id]
+                </h3>
+                <p>Deletes a comment with ID <em>[comment_id]</em></p>
+                <h2 class="title is-2">
+                    Users API Endpoints
+                </h2>
+                <h3>
+                    <strong>GET</strong> /api/users/[username]
+                </h3>
+                <p>Returns user details for user with username <em>[username]</em></p>
+            </div>
+        </section>
+    </body>
+</html>
