@@ -2,7 +2,7 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const apiRouter = require('./routes/api');
 const mongoose = require('mongoose');
-const DB_URL = require('./config');
+const {DB_URL} = process.env.NODE_ENV === 'production'? process.env : require('./config');
 const {handle400, handle404} = require('./errors');
 
 mongoose.connect(DB_URL)
