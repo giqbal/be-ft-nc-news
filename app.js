@@ -19,9 +19,10 @@ app.use('/*', (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+    // console.log(err);
     if (err.status) res.status(err.status).send({message: err.message});
     else if (err.name === 'CastError') res.status(400).send({message: `Bad request! ${err.value} is not a valid ID`});
-    else if (err.name === 'ValidationError') res.status(400).send({message: `Bad request! ${err.errors.created_by.message}`});
+    else if (err.name === 'ValidationError') res.status(400).send({message: `Bad request! ${err.message}`});
     else res.status(500).send({message: 'Woops! We messed something up on our server'});
 });
 

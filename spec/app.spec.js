@@ -57,7 +57,7 @@ describe('NC news', () => {
                 });
         });
     });
-    describe.only('api/topics/:topic_slug/articles', () => {
+    describe('api/topics/:topic_slug/articles', () => {
         it('GET articles for a certain topic', () => {
             return request
                 .get(`/api/topics/${topicDocs[0].slug}/articles`)
@@ -114,17 +114,12 @@ describe('NC news', () => {
                 });
         });
         it('POST returns status 400 if required field is missing', () => {
-            const title = 'Superman defeated by one and only!';
-            const body = 'Super villan Mitch battled superman to the death and won last night.';
             return request
                 .post(`/api/topics/${topicDocs[0].slug}/articles`)
-                .send({
-                    title,
-                    body
-                })
+                .send({})
                 .expect(400)
                 .then(({body: {message}}) => {
-                    expect(message).to.equal('Bad request! Path `created_by` is required.')
+                    expect(message).to.equal('Bad request! articles validation failed: created_by: Path `created_by` is required., title: Path `title` is required.');
                 });
         });
         it('POST returns status 400 if incorrect format of created_by is used', () => {
@@ -139,7 +134,22 @@ describe('NC news', () => {
                 })
                 .expect(400)
                 .then(({body: {message}}) => {
-                    expect(message).to.equal('Bad request! Cast to ObjectID failed for value "abc" at path "created_by"')
+                    expect(message).to.equal('Bad request! articles validation failed: created_by: Cast to ObjectID failed for value "abc" at path "created_by"');
+                });
+        });
+        it('POST returns status 404 for non-existent topic slug', () => {
+            const title = 'Superman defeated by one and only!';
+            const body = 'Super villan Mitch battled superman to the death and won last night.';
+            return request
+                .post(`/api/topics/poop/articles`)
+                .send({
+                    title,
+                    body,
+                    created_by: userDocs[0]._id
+                })
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Page not found for slug: poop');
                 });
         });
     });
@@ -163,7 +173,14 @@ describe('NC news', () => {
                     );
                     expect(body.articles[0].created_by).to.be.a('string');
                 });
-                
+        });
+        it('GET returns status 404 with incorrect url', () => {
+            return request
+                .get('/api/article')
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Page not found');
+                });
         });
     });
     describe('api/articles/:article_id', () => {
@@ -185,6 +202,22 @@ describe('NC news', () => {
                     );
                     expect(body.article._id).to.equal(articleDocs[0]._id.toString());
                     expect(body.article.created_by).to.be.a('string');
+                });
+        });
+        it('GET returns status 404 for non-existent article ID', () => {
+            return request
+                .get(`/api/articles/${userDocs[0]._id}`)
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for id: ${userDocs[0]._id}`);
+                });
+        });
+        it('GET returns status 400 for invalid ID format', () => {
+            return request
+                .get('/api/articles/abc')
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! abc is not a valid ID')
                 });
         });
         it('PUT returns status 200 and an incremented vote count for article', () => {
@@ -227,6 +260,22 @@ describe('NC news', () => {
                     expect(body.article.created_by).to.be.a('string');
                 });
         });
+        it('PUT returns status 400 for invalid vote query', () => {
+            return request
+                .put(`/api/articles/${articleDocs[0]._id}?vote=zero`)
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request: Query must be vote=up or vote=down')
+                })
+        });
+        it('PUT returns status 400 query other then vote', () => {
+            return request
+                .put(`/api/articles/${articleDocs[0]._id}?voting=up`)
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request: Query must be vote=up or vote=down')
+                })
+        });
     });
     describe('api/articles/:article_id/comments', () => {
         it('GET returns status 200 and array of comments', () => {
@@ -247,6 +296,14 @@ describe('NC news', () => {
                     );
                     expect(body.comments[0].belongs_to).to.equal(articleDocs[0]._id.toString());
                     expect(body.comments[0].created_by).to.be.a('string');
+                });
+        });
+        it('GET returns status 400 for invalid ID format', () => {
+            return request
+                .get('/api/articles/abc/comments')
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! abc is not a valid ID')
                 });
         });
         it('POST returns status 201 and added comment', () => {
@@ -272,6 +329,39 @@ describe('NC news', () => {
                     expect(body.comment.belongs_to).to.equal(articleDocs[0]._id.toString());
                     expect(body.comment.body).to.equal(commentBody);
                     expect(body.comment.created_by).to.be.a('string');
+                });
+        });
+        it('POST returns status 400 if required field is missing', () => {
+            return request
+                .post(`/api/articles/${articleDocs[0]._id}/comments`)
+                .send({})
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! comments validation failed: created_by: Path `created_by` is required., body: Path `body` is required.');
+                });
+        });
+        it('POST returns status 400 with invalid article ID format', () => {
+            return request
+                .post(`/api/articles/abc/comments`)
+                .send({
+                    body: 'Poop article',
+                    created_by: userDocs[0]._id
+                })
+                .expect(400)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal('Bad request! abc is not a valid ID');
+                });
+        });
+        it('POST returns status 404 with non-existent article ID', () => {
+            return request
+                .post(`/api/articles/${userDocs[0]._id}/comments`)
+                .send({
+                    body: 'Poop article',
+                    created_by: userDocs[0]._id
+                })
+                .expect(404)
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for id: ${userDocs[0]._id}`);
                 });
         });
     });

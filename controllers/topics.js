@@ -33,8 +33,12 @@ const getArticlesBySlug = (req, res, next) => {
 
 const addArticleBySlug = (req, res, next) => {
      const {topic_slug} = req.params;
-     const newArticle = new Article({...req.body, belongs_to: topic_slug});
-     newArticle.save()
+     Topic.findOne({slug: topic_slug})
+        .then(topic => {
+            if (topic === null) next({status: 404, message: `Page not found for slug: ${topic_slug}`});
+            const newArticle = new Article({...req.body, belongs_to: topic_slug});
+            return newArticle.save();
+        })
         .then(article => {
             res.status(201).send({article});
         })

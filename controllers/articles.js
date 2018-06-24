@@ -26,7 +26,8 @@ const getArticle = (req, res, next) => {
         .populate('created_by', 'username -_id')
         .lean()
         .then(unformattedArticle => {
-            return Promise.all([unformattedArticle, Comment.count({belongs_to: unformattedArticle._id})]);
+            if (unformattedArticle === null) next({status: 404, message: `Page not found for id: ${article_id}`});
+            else return Promise.all([unformattedArticle, Comment.count({belongs_to: unformattedArticle._id})]);
         })
         .then(([unformattedArticle, comments]) => {
             const {created_by} = unformattedArticle;
@@ -53,8 +54,12 @@ const getCommentsByArticle = (req, res, next) => {
 
 const addCommentByArticle = (req, res, next) => {
     const {article_id} = req.params;
-    const newComment = new Comment({...req.body, belongs_to: article_id});
-    newComment.save()
+    Article.findById(article_id).count()
+        .then(articleCount => {
+            if (articleCount === 0) next({status: 404, message: `Page not found for id: ${article_id}`});
+            const newComment = new Comment({...req.body, belongs_to: article_id});
+            return newComment.save()
+        })
         .then(comment => {
             res.status(201).send({comment});
         })
@@ -67,7 +72,7 @@ const updateArticleVote = (req, res, next) => {
     let updateVote;
     if (vote === 'up') updateVote = {$inc: {votes: 1}};
     else if (vote === 'down') updateVote = {$inc: {votes: -1}};
-    else next({status: 400, message: 'Bad request'});
+    else next({status: 400, message: 'Bad request: Query must be vote=up or vote=down'});
     Article.findByIdAndUpdate(article_id, updateVote, {new: true})
         .populate('created_by', 'username -_id')
         .lean()
