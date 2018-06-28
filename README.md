@@ -1,10 +1,10 @@
 # Northcoders News
 
-Northcoders News is a reddit style news app for Northcoder internal news. Articles and comments can be posted by users. App users can also upvote or downvote articles and comments.
+Northcoders News is a reddit style back-end API for news app for Northcoder internal news. Articles and comments can be posted by users. App users can also upvote or downvote articles and comments.
 
 ## Prerequisites
 
-Ensure you have NodeJS and MongoDB installed on your machine
+Ensure you have at least NodeJS v10.1.0 and MongoDB v3.6.5 installed on your machine. JavaScript code has been written to ES6 standard.
 
 ## Installing
 
@@ -33,6 +33,12 @@ const config = {
 module.exports = config[NODE_ENV]
 ```
 
+5. Open a new window and run the following command:
+
+```
+mongod
+```
+
 ## Running the tests
 
 To run the tests run the following command in terminal:
@@ -58,11 +64,18 @@ These are all the end points:
 - GET /api/articles/:article_id
 - GET /api/articles/:article_id/comments
 - POST /api/articles/:article_id/comments
-- PUT /api/articles/:article_id?vote=up
-- PUT /api/comments/:comment_id?vote=up
+- PUT /api/articles/:article_id?vote=up/down
+- PUT /api/comments/:comment_id?vote=up/down
 - DELETE /api/comments/:comment_id
 - GET /api/users/:username
 
+## Seeding Dev Database
+To seed local dev database run the following command in the terminal:
+
+```
+npm run seed:dev
+```
+If seeding is successful no errors should be returned and a message is returned to say that database has been seeded successfully.
 
 ## Deployed App
 

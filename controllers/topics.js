@@ -5,6 +5,7 @@ const getTopics = (req, res, next) => {
         .then(topics => {
             res.send({topics})
         })
+        .catch(next);
 }
 
 const getArticlesBySlug = (req, res, next) => {
@@ -14,14 +15,13 @@ const getArticlesBySlug = (req, res, next) => {
         .lean()
         .then(articles => {
             const queryPromiseArr = articles.map(article => Comment.count({belongs_to: article._id}));
-            queryPromiseArr.push(articles);
+            queryPromiseArr.unshift(articles);
             return Promise.all(queryPromiseArr);
         })
-        .then((promiseArr) => {
-            const rawArticles = promiseArr.pop()
-            if (rawArticles.length === 0) next({status: 404, message: `Page not found for topic: ${topic_slug}`});
+        .then(([rawArticles, ...commentCountsArr]) => {
+            if (rawArticles.length === 0) throw {status: 404, message: `Page not found for topic: ${topic_slug}`};
             else {
-                const articles = promiseArr.map((commentCount, index) => {
+                const articles = commentCountsArr.map((commentCount, index) => {
                     const {created_by} = rawArticles[index];
                     return {...rawArticles[index], created_by: created_by.username, comments: commentCount};
                 });

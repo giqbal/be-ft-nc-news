@@ -26,4 +26,14 @@ const createArticleLookup = (commentData, articleDocs) => {
     }, {});
 }
 
-module.exports = {formatArticleData, formatCommentData, createUserLookUp, createArticleLookup}
+const updateVote = (voteQuery, collectionID, collectionToUpdate,  next) => {
+    let registerVote = 0;
+    if (voteQuery === 'up') registerVote = 1;
+    else if (voteQuery === 'down') registerVote = -1;
+    else next({status: 400, message: 'Bad request: Query must be vote=up or vote=down'});
+    return collectionToUpdate.findByIdAndUpdate(collectionID, {$inc: {votes: registerVote}}, {new: true})
+        .populate('created_by', 'username -_id')
+        .lean()
+}
+
+module.exports = {formatArticleData, formatCommentData, createUserLookUp, createArticleLookup, updateVote}

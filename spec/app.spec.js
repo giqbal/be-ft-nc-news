@@ -2,7 +2,6 @@ process.env.NODE_ENV = 'test';
 const app = require('../app');
 const request = require('supertest')(app);
 const {expect} = require('chai');
-const {Topic} = require('../models/index');
 const seedDB = require('../seed/seed');
 const testData = require('../seed/testData/index');
 const mongoose = require('mongoose');
@@ -141,7 +140,7 @@ describe('NC news', () => {
             const title = 'Superman defeated by one and only!';
             const body = 'Super villan Mitch battled superman to the death and won last night.';
             return request
-                .post(`/api/topics/poop/articles`)
+                .post(`/api/topics/superhero/articles`)
                 .send({
                     title,
                     body,
@@ -149,7 +148,7 @@ describe('NC news', () => {
                 })
                 .expect(404)
                 .then(({body: {message}}) => {
-                    expect(message).to.equal('Page not found for slug: poop');
+                    expect(message).to.equal('Page not found for slug: superhero');
                 });
         });
     });
@@ -201,7 +200,11 @@ describe('NC news', () => {
                         '__v'
                     );
                     expect(body.article._id).to.equal(articleDocs[0]._id.toString());
+                    expect(body.article.title).to.equal(articleDocs[0].title);
+                    expect(body.article.body).to.equal(articleDocs[0].body);
                     expect(body.article.created_by).to.be.a('string');
+                    expect(body.article.belongs_to).to.equal(articleDocs[0].belongs_to);
+                    expect(body.article.votes).to.equal(articleDocs[0].votes);
                 });
         });
         it('GET returns status 404 for non-existent article ID', () => {
@@ -444,7 +447,11 @@ describe('NC news', () => {
                 .expect(204)
                 .then(({body}) => {
                     expect(body).to.be.empty;
-                });
+                    return request.delete(`/api/comments/${commentDocs[0]._id}`).expect(404);
+                })
+                .then(({body: {message}}) => {
+                    expect(message).to.equal(`Page not found for id: ${commentDocs[0]._id}`)
+                })
         });
         it('DELETE returns status 404 when non-existent comment ID is used', () => {
             return request
@@ -477,7 +484,10 @@ describe('NC news', () => {
                         'avatar_url',
                         '__v'
                     );
+                    expect(body.user._id).to.equal(userDocs[1]._id.toString());
+                    expect(body.user.name).to.equal(userDocs[1].name);
                     expect(body.user.username).to.equal(userDocs[1].username);
+                    expect(body.user.avatar_url).to.equal(userDocs[1].avatar_url);
                 });
         });
         it('GET returns status 404 with non existent username', () => {

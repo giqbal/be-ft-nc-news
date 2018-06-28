@@ -1,17 +1,19 @@
-const {Article, Comment} = require('../models/index')
+const {Article, Comment} = require('../models/index');
+const {updateVote} = require('../utils');
 
 const getArticles = (req, res, next) => {
     Article.find()
         .populate('created_by', 'username -_id')
         .lean()
         .then(unformattedArticles => {
-            const promiseArrQuery = unformattedArticles.map(unformattedArticle => Comment.count({belongs_to: unformattedArticle._id}));
-            promiseArrQuery.push(unformattedArticles);
+            const promiseArrQuery = unformattedArticles.map(unformattedArticle => {
+                return Comment.count({belongs_to: unformattedArticle._id});
+            });
+            promiseArrQuery.unshift(unformattedArticles);
             return Promise.all(promiseArrQuery);
         })
-        .then(resolvedArr => {
-            unformattedArticles = resolvedArr.pop()
-            articles = resolvedArr.map((commentCount, index) => {
+        .then(([unformattedArticles, ...commentCountsArr]) => {
+            articles = commentCountsArr.map((commentCount, index) => {
                 const {created_by} = unformattedArticles[index];
                 return {...unformattedArticles[index], created_by: created_by.username, comments: commentCount};
             });
@@ -69,20 +71,13 @@ const addCommentByArticle = (req, res, next) => {
 const updateArticleVote = (req, res, next) => {
     const {article_id} = req.params;
     const {vote} = req.query;
-    let updateVote;
-    if (vote === 'up') updateVote = {$inc: {votes: 1}};
-    else if (vote === 'down') updateVote = {$inc: {votes: -1}};
-    else next({status: 400, message: 'Bad request: Query must be vote=up or vote=down'});
-    Article.findByIdAndUpdate(article_id, updateVote, {new: true})
-        .populate('created_by', 'username -_id')
-        .lean()
+    updateVote(vote, article_id, Article, next)
         .then(article => {
             const {created_by: {username}} = article;
             article.created_by = username;
             res.send({article});
         })
         .catch(next);
-    
 }
 
 module.exports = {getArticles, getArticle, getCommentsByArticle, addCommentByArticle, updateArticleVote}
