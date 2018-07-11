@@ -12,7 +12,7 @@ mongoose.connect(DB_URL)
     })
     .catch(console.log);
 
-app.use(cors.json());
+app.use(cors());
 
 app.use(bodyParser.json());
 
